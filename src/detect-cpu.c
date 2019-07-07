@@ -30,6 +30,36 @@ void cpuid(int info[4], int InfoType){
 #endif
 
 
+/* cpu_manufacturer_id
+
+the result is stored in that order, a, c, b corresponding to
+EBX, EDX, ECX!
+*/
+
+char *cpu_manufacturer_id(int a, int c, int b)
+{
+  char idstr[13];
+
+  int i;
+
+  idstr[12] = '\0';
+  idstr[0] = (char)(a >> 0) & 0xff;
+  idstr[1] = (char)(a >> 8) & 0xff;
+  idstr[2] = (char)(a >> 16) & 0xff;
+  idstr[3] = (char)(a >> 24) & 0xff;
+  idstr[4] = (char)(b >> 0) & 0xff;
+  idstr[5] = (char)(b >> 8) & 0xff;
+  idstr[6] = (char)(b >> 16) & 0xff;
+  idstr[7] = (char)(b >> 24) & 0xff;
+  idstr[8] = (char)(c >> 0) & 0xff;
+  idstr[9] = (char)(c >> 8) & 0xff;
+  idstr[10] = (char)(c >> 16) & 0xff;
+  idstr[11] = (char)(c >> 24) & 0xff;
+
+  return strdup(idstr);
+}
+
+
 /*  Misc. */
 int HW_MMX;
 int HW_x64;
@@ -78,6 +108,7 @@ void get_cpu_flags(void)
 
   cpuid(info, 0);
   nIds = info[0];
+  printf("%s\n", cpu_manufacturer_id(info[1], info[2], info[3]));
 
   cpuid(info, 0x80000000);
   nExIds = info[0];
