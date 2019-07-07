@@ -30,35 +30,91 @@ void cpuid(int info[4], int InfoType){
 #endif
 
 
+char cpu_id_str[13];
+
+
+typedef struct {
+  int id;
+  char *vendor;
+} _vendor_strings;
+
+
+#define CPU_UNKNOWN   0
+#define CPU_Intel     1
+#define CPU_AMD       2
+#define CPU_Centauer  3
+#define CPU_Cyrix     4
+#define CPU_Hygon     5
+#define CPU_Transmeta 6
+#define CPU_NSC       7
+#define CPU_NexGen    8
+#define CPU_Rise      9
+#define CPU_SiS       10
+#define CPU_UMC       11
+#define CPU_VIA       12
+#define CPU_Vortex    13
+
+
+int cpu_type;
+
+_vendor_strings vendor_string[14] = { { CPU_Intel, "GenuineIntel"},
+                                     { CPU_AMD, "AuthenticAMD"},
+                                     { CPU_Centauer, "CentaurHauls"},
+                                     { CPU_Cyrix, "CyrixInstead"},
+                                     { CPU_Hygon, "HygonGenuine"},
+                                     { CPU_Transmeta, "TransmetaCPU"},
+                                     { CPU_Transmeta, "TransmetaCPU"},
+                                     { CPU_NSC, "Geode by NSC"},
+                                     { CPU_NexGen, ""},
+                                     { CPU_Rise, ""},
+                                     { CPU_UMC, ""},
+                                     { CPU_VIA, ""},
+                                     { CPU_Vortex, ""},
+                                     { CPU_UNKNOWN, NULL }
+                                   };
+
+
 /* cpu_manufacturer_id
 
 the result is stored in that order, a, c, b corresponding to
 EBX, EDX, ECX!
 */
 
-char *cpu_manufacturer_id(int a, int c, int b)
+void cpu_manufacturer_id(int a, int c, int b)
 {
-  char idstr[13];
-
-  int i;
-
-  idstr[12] = '\0';
-  idstr[0] = (char)(a >> 0) & 0xff;
-  idstr[1] = (char)(a >> 8) & 0xff;
-  idstr[2] = (char)(a >> 16) & 0xff;
-  idstr[3] = (char)(a >> 24) & 0xff;
-  idstr[4] = (char)(b >> 0) & 0xff;
-  idstr[5] = (char)(b >> 8) & 0xff;
-  idstr[6] = (char)(b >> 16) & 0xff;
-  idstr[7] = (char)(b >> 24) & 0xff;
-  idstr[8] = (char)(c >> 0) & 0xff;
-  idstr[9] = (char)(c >> 8) & 0xff;
-  idstr[10] = (char)(c >> 16) & 0xff;
-  idstr[11] = (char)(c >> 24) & 0xff;
-
-  return strdup(idstr);
+  cpu_id_str[12] = '\0';
+  cpu_id_str[0] = (char)(a >> 0) & 0xff;
+  cpu_id_str[1] = (char)(a >> 8) & 0xff;
+  cpu_id_str[2] = (char)(a >> 16) & 0xff;
+  cpu_id_str[3] = (char)(a >> 24) & 0xff;
+  cpu_id_str[4] = (char)(b >> 0) & 0xff;
+  cpu_id_str[5] = (char)(b >> 8) & 0xff;
+  cpu_id_str[6] = (char)(b >> 16) & 0xff;
+  cpu_id_str[7] = (char)(b >> 24) & 0xff;
+  cpu_id_str[8] = (char)(c >> 0) & 0xff;
+  cpu_id_str[9] = (char)(c >> 8) & 0xff;
+  cpu_id_str[10] = (char)(c >> 16) & 0xff;
+  cpu_id_str[11] = (char)(c >> 24) & 0xff;
 }
 
+
+void set_cpu_type(void)
+{
+  int i;
+
+  i = 0;
+
+  while (vendor_string[i].id != CPU_UNKNOWN)
+  {
+    if (strcmp(cpu_id_str, vendor_string[i].vendor) == 0)
+      cpu_type = vendor_string[i].id;
+      return;
+
+    ++i;
+  }
+
+  cpu_type = CPU_UNKNOWN;
+}
 
 /*  Misc. */
 int HW_MMX;
@@ -108,7 +164,10 @@ void get_cpu_flags(void)
 
   cpuid(info, 0);
   nIds = info[0];
-  printf("%s\n", cpu_manufacturer_id(info[1], info[2], info[3]));
+
+  /* read the vendor string */
+  cpu_manufacturer_id(info[1], info[2], info[3]);
+  set_cpu_type();
 
   cpuid(info, 0x80000000);
   nExIds = info[0];
@@ -167,9 +226,17 @@ void get_cpu_flags(void)
 }
 
 
+void report_cpu_data(void)
+{
+  printf("vendor: %s\n", cpu_id_str);
+}
+
+
 int main(int argc, char* argv[])
 {
   get_cpu_flags();
+
+  report_cpu_data();
 
   return 0;
 }
