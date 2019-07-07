@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.0)
 
-project(detectcpu)
+project(detectcpu C)
 
 # written by: Oliver Cordes 2019-07-07
 # changed by: Oliver Cordes 2019-07-07
