@@ -68,6 +68,7 @@ int HW_RDSEED;
 int HW_ADX;
 int HW_CLFLUSHOPT;
 int HW_PREFETCHWT1;
+int HW_PREFETCHW;
 
 /*  SIMD: 128-bit */
 int HW_SSE;
@@ -295,11 +296,12 @@ void get_cpu_flags(void)
   if (nExIds >= 0x80000001)
   {
     cpuid(info,0x80000001);
-    HW_x64   = (info[3] & ((int)1 << 29)) != 0;
-    HW_ABM   = (info[2] & ((int)1 <<  5)) != 0;
-    HW_SSE4a = (info[2] & ((int)1 <<  6)) != 0;
-    HW_FMA4  = (info[2] & ((int)1 << 16)) != 0;
-    HW_XOP   = (info[2] & ((int)1 << 11)) != 0;
+    HW_x64       = (info[3] & ((int)1 << 29)) != 0;
+    HW_ABM       = (info[2] & ((int)1 <<  5)) != 0;
+    HW_SSE4a     = (info[2] & ((int)1 <<  6)) != 0;
+    HW_PREFETCHW = (info[2] & ((int)1 <<  8)) != 0;
+    HW_FMA4      = (info[2] & ((int)1 << 16)) != 0;
+    HW_XOP       = (info[2] & ((int)1 << 11)) != 0;
   }
 }
 
@@ -336,10 +338,10 @@ int get_gcc_arch_type_intel(void)
           {
             if (HW_MOVBE && HW_AVX2 && HW_FMA && HW_BMI && HW_BMI2)
             {
-              if (HW_RDSEED && HW_ADX && HW_PREFETCHWT1 && HW_CLFLUSHOPT
+              if (HW_RDSEED && HW_ADX && HW_PREFETCHW && HW_CLFLUSHOPT
                   && HW_XSAVEC && HW_XSAVES)
                 return intel_skylake;
-              if (HW_RDSEED && HW_ADX && HW_PREFETCHWT1)
+              if (HW_RDSEED && HW_ADX && HW_PREFETCHW)
                 return intel_broadwell;
 
               return intel_haswell;
@@ -355,7 +357,7 @@ int get_gcc_arch_type_intel(void)
 
     if (HW_MOVBE)
       return intel_bonnell;
-      
+
     return intel_core2;
   }
   else
