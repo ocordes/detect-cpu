@@ -8,9 +8,18 @@
   https://github.com/Mysticial/FeatureDetector
 */
 
+/* technical information about the cpuid and feature
+  extraction one can get from:
 
-/* read
   https://dox.ipxe.org/cpuid_8h_source.html
+  https://hjlebbink.github.io/x86doc/html/CPUID.html
+*/
+
+/* tranlating the CPU features into gcc ARCH definitions
+  based on this document:
+
+  https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
+
 */
 
 
@@ -80,6 +89,8 @@ int HW_SSE41 = 0;
 int HW_SSE42 = 0;
 int HW_SSE4a = 0;
 int HW_AES = 0;
+int HW_XSAVE = 0;
+int HW_OSXSAVE = 0;
 int HW_MOVBE = 0;
 int HW_POPCNT = 0;
 int HW_F16C = 0;
@@ -253,24 +264,24 @@ void get_cpu_flags(void)
   if (nIds >= 0x00000001)
   {
     cpuid(info,0x00000001);
-    HW_MMX    = (info[3] & ((int)1 << 23)) != 0;
-    HW_SSE    = (info[3] & ((int)1 << 25)) != 0;
-    HW_SSE2   = (info[3] & ((int)1 << 26)) != 0;
+    HW_MMX     = (info[3] & ((int)1 << 23)) != 0;
+    HW_SSE     = (info[3] & ((int)1 << 25)) != 0;
+    HW_SSE2    = (info[3] & ((int)1 << 26)) != 0;
 
-    HW_SSE3   = (info[2] & ((int)1 <<  0)) != 0;
-    HW_PCLMUL = (info[2] & ((int)1 <<  1)) != 0;
-    HW_SSSE3  = (info[2] & ((int)1 <<  9)) != 0;
-    HW_FMA    = (info[2] & ((int)1 << 12)) != 0;
-    HW_SSE41  = (info[2] & ((int)1 << 19)) != 0;
-    HW_SSE42  = (info[2] & ((int)1 << 20)) != 0;
-    HW_MOVBE  = (info[2] & ((int)1 << 22)) != 0;
-    HW_POPCNT = (info[2] & ((int)1 << 23)) != 0;
-    HW_AES    = (info[2] & ((int)1 << 25)) != 0;
-    //HW_XSAVEC = (info[2] & ((int)1 << 26)) != 0;
-    //HW_XSAVES = (info[2] & ((int)1 << 27)) != 0;
-    HW_AVX    = (info[2] & ((int)1 << 28)) != 0;
-    HW_F16C   = (info[2] & ((int)1 << 29)) != 0;
-    HW_RDRND  = (info[2] & ((int)1 << 30)) != 0;
+    HW_SSE3    = (info[2] & ((int)1 <<  0)) != 0;
+    HW_PCLMUL  = (info[2] & ((int)1 <<  1)) != 0;
+    HW_SSSE3   = (info[2] & ((int)1 <<  9)) != 0;
+    HW_FMA     = (info[2] & ((int)1 << 12)) != 0;
+    HW_SSE41   = (info[2] & ((int)1 << 19)) != 0;
+    HW_SSE42   = (info[2] & ((int)1 << 20)) != 0;
+    HW_MOVBE   = (info[2] & ((int)1 << 22)) != 0;
+    HW_POPCNT  = (info[2] & ((int)1 << 23)) != 0;
+    HW_AES     = (info[2] & ((int)1 << 25)) != 0;
+    HW_XSAVE   = (info[2] & ((int)1 << 26)) != 0;
+    HW_OSXSAVE = (info[2] & ((int)1 << 27)) != 0;
+    HW_AVX     = (info[2] & ((int)1 << 28)) != 0;
+    HW_F16C    = (info[2] & ((int)1 << 29)) != 0;
+    HW_RDRND   = (info[2] & ((int)1 << 30)) != 0;
   }
 
   if (nIds >= 0x00000007)
