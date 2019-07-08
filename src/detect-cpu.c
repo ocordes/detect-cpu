@@ -58,54 +58,58 @@ typedef struct {
 /* CPU feature flags */
 
 /*  Misc. */
-int HW_MMX;
-int HW_x64;
-int HW_ABM;      /* Advanced Bit Manipulation */
-int HW_RDRND;
-int HW_BMI;
-int HW_BMI2;
-int HW_RDSEED;
-int HW_ADX;
-int HW_CLFLUSHOPT;
-int HW_PREFETCHWT1;
-int HW_PREFETCHW;
+int HW_MMX = 0;
+int HW_x64 = 0;
+int HW_ABM = 0;      /* Advanced Bit Manipulation */
+int HW_RDRND = 0;
+int HW_BMI = 0;
+int HW_BMI2 = 0;
+int HW_RDSEED = 0;
+int HW_ADX = 0;
+int HW_CLFLUSHOPT = 0;
+int HW_PREFETCHWT1 = 0;
+int HW_PREFETCHW = 0;
 
 /*  SIMD: 128-bit */
-int HW_SSE;
-int HW_PCLMUL;
-int HW_SSE2;
-int HW_SSE3;
-int HW_SSSE3;
-int HW_SSE41;
-int HW_SSE42;
-int HW_SSE4a;
-int HW_AES;
-int HW_MOVBE;
-int HW_POPCNT;
-int HW_XSAVEC;
-int HW_XSAVES;
-int HW_F16C;
-int HW_SHA;
+int HW_SSE = 0;
+int HW_PCLMUL = 0;
+int HW_SSE2 = 0;
+int HW_SSE3 = 0;
+int HW_SSSE3 = 0;
+int HW_SSE41 = 0;
+int HW_SSE42 = 0;
+int HW_SSE4a = 0;
+int HW_AES = 0;
+int HW_MOVBE = 0;
+int HW_POPCNT = 0;
+int HW_F16C = 0;
+int HW_SHA = 0;
 
 /*  SIMD: 256-bit */
-int HW_FSGSBASE;
-int HW_AVX;
-int HW_XOP;
-int HW_FMA;
-int HW_FMA4;
-int HW_AVX2;
+int HW_FSGSBASE = 0;
+int HW_AVX = 0;
+int HW_XOP = 0;
+int HW_FMA = 0;
+int HW_FMA4 = 0;
+int HW_AVX2 = 0;
 
 /*  SIMD: 512-bit */
-int HW_AVX512F;    /*  AVX512 Foundation */
-int HW_AVX512CD;   /*  AVX512 Conflict Detection */
-int HW_AVX512PF;   /*  AVX512 Prefetch */
-int HW_AVX512ER;   /*  AVX512 Exponential + Reciprocal */
-int HW_AVX512VL;   /*  AVX512 Vector Length Extensions */
-int HW_AVX512BW;   /*  AVX512 Byte + Word */
-int HW_AVX512DQ;   /*  AVX512 Doubleword + Quadword */
-int HW_AVX512IFMA; /*  AVX512 Integer 52-bit Fused Multiply-Add */
-int HW_AVX512VBMI; /*  AVX512 Vector Byte Manipulation Instructions */
+int HW_AVX512F = 0;    /*  AVX512 Foundation */
+int HW_AVX512CD = 0;   /*  AVX512 Conflict Detection */
+int HW_AVX512PF = 0;   /*  AVX512 Prefetch */
+int HW_AVX512ER = 0;   /*  AVX512 Exponential + Reciprocal */
+int HW_AVX512VL = 0;   /*  AVX512 Vector Length Extensions */
+int HW_AVX512BW = 0;   /*  AVX512 Byte + Word */
+int HW_AVX512DQ = 0;   /*  AVX512 Doubleword + Quadword */
+int HW_AVX512IFMA = 0; /*  AVX512 Integer 52-bit Fused Multiply-Add */
+int HW_AVX512VBMI = 0; /*  AVX512 Vector Byte Manipulation Instructions */
 
+
+/* Processor Extended State Enumeration Main Leaf (EAX = 0DH, ECX = 0) */
+int HW_XSAVEC = 0;
+int HW_XSAVES = 0;
+int HW_XSAVEOPT = 0;
+int HW_XGETBV = 0;
 
 /* Intel CPUs */
 
@@ -234,7 +238,7 @@ void get_cpu_flags(void)
   unsigned nExIds;
 
   cpuid(info, 0);
-  nIds = info[0];
+  nIds = info[0];   /* the maximum leaf for question with cpuid */
 
   printf("%x\n", nIds);
 
@@ -262,8 +266,8 @@ void get_cpu_flags(void)
     HW_MOVBE  = (info[2] & ((int)1 << 22)) != 0;
     HW_POPCNT = (info[2] & ((int)1 << 23)) != 0;
     HW_AES    = (info[2] & ((int)1 << 25)) != 0;
-    HW_XSAVEC = (info[2] & ((int)1 << 26)) != 0;
-    HW_XSAVES = (info[2] & ((int)1 << 27)) != 0;
+    //HW_XSAVEC = (info[2] & ((int)1 << 26)) != 0;
+    //HW_XSAVES = (info[2] & ((int)1 << 27)) != 0;
     HW_AVX    = (info[2] & ((int)1 << 28)) != 0;
     HW_F16C   = (info[2] & ((int)1 << 29)) != 0;
     HW_RDRND  = (info[2] & ((int)1 << 30)) != 0;
@@ -291,6 +295,16 @@ void get_cpu_flags(void)
     HW_AVX512DQ    = (info[1] & ((int)1 << 17)) != 0;
     HW_AVX512IFMA  = (info[1] & ((int)1 << 21)) != 0;
     HW_AVX512VBMI  = (info[2] & ((int)1 <<  1)) != 0;
+  }
+
+  if (nIds >= 0x0000000d)
+  {
+    cpuid(info,0x0000000d);
+
+    HW_XSAVEOPT = (info[0] & ((int)1 << 0)) != 0;
+    HW_XSAVEC   = (info[0] & ((int)1 << 1)) != 0;
+    HW_XGETBV   = ((info[0] & ((int)1 << 2)) != 0) && (info[2] == 1);
+    HW_XSAVES   = (info[0] & ((int)1 << 3)) != 0;
   }
 
   if (nExIds >= 0x80000001)
