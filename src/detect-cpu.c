@@ -66,11 +66,77 @@ typedef struct {
 
 /* CPU feature flags */
 
-/*  Misc. */
+/* EAX=1: Processor Info and Feature Bits */
+int HW_FPU = 0;
+int HW_VME = 0;
+int HW_DE = 0;
+int HW_PSE = 0;
+int HW_TSC = 0;
+int HW_MSR = 0;
+int HW_PAE = 0;
+int HW_MCE = 0;
+int HW_CX8 = 0;
+int HW_APIC = 0;
+
+int HW_SEP = 0;
+int HW_MTRR = 0;
+int HW_PGE = 0;
+int HW_MCA = 0;
+int HW_CMOV = 0;
+int HW_PAT = 0;
+int HW_PSE36 = 0;
+int HW_PSN = 0;
+int HW_CLFLUSH = 0;
+
+int HW_DS = 0;
+int HW_ACPI = 0;
 int HW_MMX = 0;
+int HW_FXSR = 0;
+int HW_SSE = 0;
+int HW_SSE2 = 0;
+int HW_SS = 0;
+int HW_HTT = 0;
+int HW_TM = 0;
+int HW_IA64 = 0;
+int HW_PBE = 0;
+
+int HW_SSE3 = 0;
+int HW_PCLMUL = 0;
+int HW_DTES64 = 0;
+int HW_MONITOR = 0;
+int HW_DS_CPL = 0;
+int HW_VMX = 0;
+int HW_SMX = 0;
+int HW_EST = 0;
+int HW_TM2 = 0;
+int HW_SSSE3 = 0;
+int HW_CNXT_ID = 0;
+int HW_SDBG = 0;
+int HW_FMA = 0;
+int HW_CX16 = 0;
+int HW_XTPR = 0;
+int HW_PDCM = 0;
+int HW_PCID = 0;
+int HW_DCA = 0;
+int HW_SSE41 = 0;
+int HW_SSE42 = 0;
+int HW_X2APIC = 0;
+int HW_MOVBE = 0;
+int HW_POPCNT = 0;
+int HW_TSC_DEADLINE = 0;
+int HW_AES = 0;
+int HW_XSAVE = 0;
+int HW_OSXSAVE = 0;
+int HW_AVX = 0;
+int HW_F16C = 0;
+int HW_RDRND = 0;
+int HW_HYPERVISOR = 0;
+
+
+
+/*  Misc. */
 int HW_x64 = 0;
 int HW_ABM = 0;      /* Advanced Bit Manipulation */
-int HW_RDRND = 0;
 int HW_BMI = 0;
 int HW_BMI2 = 0;
 int HW_RDSEED = 0;
@@ -80,27 +146,12 @@ int HW_PREFETCHWT1 = 0;
 int HW_PREFETCHW = 0;
 
 /*  SIMD: 128-bit */
-int HW_SSE = 0;
-int HW_PCLMUL = 0;
-int HW_SSE2 = 0;
-int HW_SSE3 = 0;
-int HW_SSSE3 = 0;
-int HW_SSE41 = 0;
-int HW_SSE42 = 0;
 int HW_SSE4a = 0;
-int HW_AES = 0;
-int HW_XSAVE = 0;
-int HW_OSXSAVE = 0;
-int HW_MOVBE = 0;
-int HW_POPCNT = 0;
-int HW_F16C = 0;
 int HW_SHA = 0;
 
 /*  SIMD: 256-bit */
 int HW_FSGSBASE = 0;
-int HW_AVX = 0;
 int HW_XOP = 0;
-int HW_FMA = 0;
 int HW_FMA4 = 0;
 int HW_AVX2 = 0;
 
@@ -264,24 +315,71 @@ void get_cpu_flags(void)
   if (nIds >= 0x00000001)
   {
     cpuid(info,0x00000001);
+    HW_FPU     = (info[3] & ((int)1 << 0)) != 0;
+	  HW_VME     = (info[3] & ((int)1 << 1)) != 0;
+	  HW_DE      = (info[3] & ((int)1 << 2)) != 0;
+	  HW_PSE     = (info[3] & ((int)1 << 3)) != 0;
+	  HW_TSC     = (info[3] & ((int)1 << 4)) != 0;
+	  HW_MSR     = (info[3] & ((int)1 << 5)) != 0;
+	  HW_PAE     = (info[3] & ((int)1 << 6)) != 0;
+	  HW_MCE     = (info[3] & ((int)1 << 7)) != 0;
+	  HW_CX8     = (info[3] & ((int)1 << 8)) != 0;
+	  HW_APIC    = (info[3] & ((int)1 << 9)) != 0;
+
+	  HW_SEP     = (info[3] & ((int)1 << 11)) != 0;
+    HW_MTRR    = (info[3] & ((int)1 << 12)) != 0;
+    HW_PGE     = (info[3] & ((int)1 << 13)) != 0;
+    HW_MCA     = (info[3] & ((int)1 << 14)) != 0;
+    HW_CMOV    = (info[3] & ((int)1 << 15)) != 0;
+    HW_PAT     = (info[3] & ((int)1 << 16)) != 0;
+    HW_PSE36   = (info[3] & ((int)1 << 17)) != 0;
+    HW_PSN     = (info[3] & ((int)1 << 18)) != 0;
+    HW_CLFLUSH = (info[3] & ((int)1 << 19)) != 0;
+
+	  HW_DS      = (info[3] & ((int)1 << 21)) != 0;
+    HW_ACPI    = (info[3] & ((int)1 << 22)) != 0;
     HW_MMX     = (info[3] & ((int)1 << 23)) != 0;
+    HW_FXSR    = (info[3] & ((int)1 << 24)) != 0;
     HW_SSE     = (info[3] & ((int)1 << 25)) != 0;
     HW_SSE2    = (info[3] & ((int)1 << 26)) != 0;
+    HW_SS      = (info[3] & ((int)1 << 27)) != 0;
+    HW_HTT     = (info[3] & ((int)1 << 28)) != 0;
+    HW_TM      = (info[3] & ((int)1 << 29)) != 0;
+    HW_IA64    = (info[3] & ((int)1 << 30)) != 0;
+    HW_PBE     = (info[3] & ((int)1 << 31)) != 0;
+
 
     HW_SSE3    = (info[2] & ((int)1 <<  0)) != 0;
     HW_PCLMUL  = (info[2] & ((int)1 <<  1)) != 0;
+    HW_DTES64  = (info[2] & ((int)1 <<  2)) != 0;
+    HW_MONITOR = (info[2] & ((int)1 <<  3)) != 0;
+    HW_DS_CPL  = (info[2] & ((int)1 <<  4)) != 0;
+    HW_VMX     = (info[2] & ((int)1 <<  5)) != 0;
+    HW_SMX     = (info[2] & ((int)1 <<  6)) != 0;
+    HW_EST     = (info[2] & ((int)1 <<  7)) != 0;
+    HW_TM2     = (info[2] & ((int)1 <<  8)) != 0;
     HW_SSSE3   = (info[2] & ((int)1 <<  9)) != 0;
+    HW_CNXT_ID = (info[2] & ((int)1 << 10)) != 0;
+    HW_SDBG    = (info[2] & ((int)1 << 11)) != 0;
     HW_FMA     = (info[2] & ((int)1 << 12)) != 0;
+    HW_CX16    = (info[2] & ((int)1 << 13)) != 0;
+    HW_XTPR    = (info[2] & ((int)1 << 14)) != 0;
+    HW_PDCM    = (info[2] & ((int)1 << 15)) != 0;
+    HW_PCID    = (info[2] & ((int)1 << 17)) != 0;
+    HW_DCA     = (info[2] & ((int)1 << 18)) != 0;
     HW_SSE41   = (info[2] & ((int)1 << 19)) != 0;
     HW_SSE42   = (info[2] & ((int)1 << 20)) != 0;
+    HW_X2APIC  = (info[2] & ((int)1 << 21)) != 0;
     HW_MOVBE   = (info[2] & ((int)1 << 22)) != 0;
     HW_POPCNT  = (info[2] & ((int)1 << 23)) != 0;
+    HW_TSC_DEADLINE = (info[2] & ((int)1 << 24)) != 0;
     HW_AES     = (info[2] & ((int)1 << 25)) != 0;
     HW_XSAVE   = (info[2] & ((int)1 << 26)) != 0;
     HW_OSXSAVE = (info[2] & ((int)1 << 27)) != 0;
     HW_AVX     = (info[2] & ((int)1 << 28)) != 0;
     HW_F16C    = (info[2] & ((int)1 << 29)) != 0;
     HW_RDRND   = (info[2] & ((int)1 << 30)) != 0;
+    HW_HYPERVISOR = (info[2] & ((int)1 << 31)) != 0;
   }
 
   if (nIds >= 0x00000007)
@@ -427,12 +525,59 @@ void cpu_arch_type(void)
 }
 
 
+void all_cpu_flags(void)
+{
+  #define mc 5000
+  char *s;
+
+  s = (char*) malloc(mc);
+  s[0] = '\0';
+
+  if (HW_FPU) strncat(s, "fpu ", mc);
+  if (HW_VME) strncat(s, "vme ", mc);
+  if (HW_DE) strncat(s, "de ", mc);
+  if (HW_PSE) strncat(s, "pse ", mc);
+  if (HW_TSC) strncat(s, "tsc ", mc);
+  if (HW_MSR) strncat(s, "msr ", mc);
+  if (HW_PAE) strncat(s, "pae ", mc);
+  if (HW_MCE) strncat(s, "mce ", mc);
+  if (HW_CX8) strncat(s, "cx8 ", mc);
+  if (HW_APIC) strncat(s, "apic ", mc);
+
+  if (HW_SEP) strncat(s, "sep ", mc);
+  if (HW_MTRR) strncat(s, "mtrr ", mc);
+  if (HW_PGE) strncat(s, "pge ", mc);
+  if (HW_MCA) strncat(s, "mca ", mc);
+  if (HW_CMOV) strncat(s, "cmov ", mc);
+  if (HW_PAT) strncat(s, "pat ", mc);
+  if (HW_PSE36) strncat(s, "pse36 ", mc);
+  if (HW_PSN) strncat(s, "psn ", mc);
+  if (HW_CLFLUSH) strncat(s, "clflush ", mc);
+
+  if (HW_DS) strncat(s, "ds ", mc);
+  if (HW_ACPI) strncat(s, "acpi ", mc);
+  if (HW_MMX) strncat(s, "mmx ", mc);
+  if (HW_FXSR) strncat(s, "fxsr ", mc);
+  if (HW_SSE) strncat(s, "sse ", mc);
+  if (HW_SSE2) strncat(s, "sse2 ", mc);
+  if (HW_SS) strncat(s, "ss ", mc);
+  if (HW_HTT) strncat(s, "htt ", mc);
+  if (HW_TM) strncat(s, "tm ", mc);
+  if (HW_IA64) strncat(s, "ia64 ", mc);
+  if (HW_PBE) strncat(s, "pbe ", mc);
+
+  printf("CPU flags: %s\n", s);
+  free(s);
+}
+
+
 int main(int argc, char* argv[])
 {
   get_cpu_flags();
 
   report_cpu_data();
 
+  all_cpu_flags();
 
   cpu_arch_type();
 
