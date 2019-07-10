@@ -40,6 +40,7 @@ void cpuid(int info[4], int InfoType){
 
 
 char cpu_id_str[13];
+char cpu_brand[49];
 
 
 typedef struct {
@@ -133,10 +134,49 @@ int HW_RDRND = 0;
 int HW_HYPERVISOR = 0;
 
 
+/* EAX=80000001h: Extended Processor Info and Feature Bits */
+
+int HW_SYSCALL = 0;
+int HW_MP = 0;
+int HW_NX = 0;
+int HW_MMEXT = 0;
+int HW_FXSR_OPT = 0;
+int HW_PDPE1GB = 0;
+int HW_RDTSCP  = 0;
+int HW_LM = 0;
+int HW_3DNOWEXT = 0;
+int HW_3DNOW = 0;
+
+
+int HW_LAHF_LM = 0;
+int HW_CMP_LEGACY = 0;
+int HW_SVM = 0;
+int HW_EXTAPIC = 0;
+int HW_CR8_LEGACY = 0;
+int HW_ABM = 0;
+int HW_SSE4A = 0;
+int HW_MISALIGNSSE = 0;
+int HW_3DNOWPREFETCH = 0;
+int HW_OSVW = 0;
+int HW_IBS = 0;
+int HW_XOP = 0;
+int HW_SKINIT = 0;
+int HW_WDT = 0;
+int HW_IWP = 0;
+int HW_FMA4 = 0;
+int HW_TCE = 0;
+int HW_NODEID_MSR = 0;
+int HW_TBM = 0;
+int HW_TOPOEXT = 0;
+int HW_PERFCTR_CORE = 0;
+int HW_PERFCTR_NB = 0;
+int HW_DBX = 0;
+int HW_PERFTSC = 0;
+int HW_PCX_L2I = 0;
+
 
 /*  Misc. */
 int HW_x64 = 0;
-int HW_ABM = 0;      /* Advanced Bit Manipulation */
 int HW_BMI = 0;
 int HW_BMI2 = 0;
 int HW_RDSEED = 0;
@@ -146,13 +186,10 @@ int HW_PREFETCHWT1 = 0;
 int HW_PREFETCHW = 0;
 
 /*  SIMD: 128-bit */
-int HW_SSE4a = 0;
 int HW_SHA = 0;
 
 /*  SIMD: 256-bit */
 int HW_FSGSBASE = 0;
-int HW_XOP = 0;
-int HW_FMA4 = 0;
 int HW_AVX2 = 0;
 
 /*  SIMD: 512-bit */
@@ -419,12 +456,130 @@ void get_cpu_flags(void)
   if (nExIds >= 0x80000001)
   {
     cpuid(info,0x80000001);
-    HW_x64       = (info[3] & ((int)1 << 29)) != 0;
+
+    /*
+    HW_FPU       = (info[3] & ((int)1 <<  0)) != 0;
+    HW_VME       = (info[3] & ((int)1 <<  1)) != 0;
+    HW_DE        = (info[3] & ((int)1 <<  2)) != 0;
+    HW_PSE       = (info[3] & ((int)1 <<  3)) != 0;
+    HW_TSC       = (info[3] & ((int)1 <<  4)) != 0;
+    HW_MSR       = (info[3] & ((int)1 <<  5)) != 0;
+    HW_PAE       = (info[3] & ((int)1 <<  6)) != 0;
+    HW_MCE       = (info[3] & ((int)1 <<  7)) != 0;
+    HW_CX8       = (info[3] & ((int)1 <<  8)) != 0;
+    HW_APIC      = (info[3] & ((int)1 <<  9)) != 0; */
+    HW_SYSCALL   = (info[3] & ((int)1 << 11)) != 0;
+    /*
+    HW_MTRR      = (info[3] & ((int)1 << 12)) != 0;
+    HW_PGE	 = (info[3] & ((int)1 << 13)) != 0;
+    HW_MCA 	 = (info[3] & ((int)1 << 14)) != 0;
+    HW_CMOV      = (info[3] & ((int)1 << 15)) != 0;
+    HW_PAT       = (info[3] & ((int)1 << 16)) != 0;
+    HW_PSE36     = (info[3] & ((int)1 << 17)) != 0; */
+    HW_MP        = (info[3] & ((int)1 << 19)) != 0;
+    HW_NX        = (info[3] & ((int)1 << 20)) != 0;
+    HW_MMEXT     = (info[3] & ((int)1 << 22)) != 0;
+    /*
+    HW_MMX       = (info[3] & ((int)1 << 23)) != 0;
+    HW_FXSR      = (info[3] & ((int)1 << 24)) != 0; */
+    HW_FXSR_OPT  = (info[3] & ((int)1 << 25)) != 0;
+    HW_PDPE1GB   = (info[3] & ((int)1 << 26)) != 0;
+    HW_RDTSCP    = (info[3] & ((int)1 << 27)) != 0;
+    HW_LM        = (info[3] & ((int)1 << 29)) != 0;
+    HW_3DNOWEXT  = (info[3] & ((int)1 << 30)) != 0;
+    HW_3DNOW     = (info[3] & ((int)1 << 31)) != 0;
+
+    HW_LAHF_LM   = (info[2] & ((int)1 <<  0)) != 0;
+    HW_CMP_LEGACY = (info[2] & ((int)1 <<  1)) != 0;
+    HW_SVM       = (info[2] & ((int)1 <<  2)) != 0;
+    HW_EXTAPIC   = (info[2] & ((int)1 <<  3)) != 0;
+    HW_CR8_LEGACY = (info[2] & ((int)1 <<  4)) != 0;
     HW_ABM       = (info[2] & ((int)1 <<  5)) != 0;
-    HW_SSE4a     = (info[2] & ((int)1 <<  6)) != 0;
-    HW_PREFETCHW = (info[2] & ((int)1 <<  8)) != 0;
-    HW_FMA4      = (info[2] & ((int)1 << 16)) != 0;
+    HW_SSE4A     = (info[2] & ((int)1 <<  6)) != 0;
+    HW_MISALIGNSSE = (info[2] & ((int)1 <<  7)) != 0;
+    HW_3DNOWPREFETCH = (info[2] & ((int)1 <<  8)) != 0;
+    HW_OSVW      = (info[2] & ((int)1 <<  9)) != 0;
+    HW_IBS       = (info[2] & ((int)1 << 10)) != 0;
     HW_XOP       = (info[2] & ((int)1 << 11)) != 0;
+    HW_SKINIT    = (info[2] & ((int)1 << 12)) != 0;
+    HW_WDT       = (info[2] & ((int)1 << 13)) != 0;
+    HW_IWP       = (info[2] & ((int)1 << 15)) != 0;
+    HW_FMA4      = (info[2] & ((int)1 << 16)) != 0;
+    HW_TCE       = (info[2] & ((int)1 << 17)) != 0;
+    HW_NODEID_MSR = (info[2] & ((int)1 << 19)) != 0;
+    HW_TBM       = (info[2] & ((int)1 << 21)) != 0;
+    HW_TOPOEXT   = (info[2] & ((int)1 << 22)) != 0;
+    HW_PERFCTR_CORE = (info[2] & ((int)1 << 23)) != 0;
+    HW_PERFCTR_NB = (info[2] & ((int)1 << 24)) != 0;
+    HW_DBX       = (info[2] & ((int)1 << 26)) != 0;
+    HW_PERFTSC   = (info[2] & ((int)1 << 27)) != 0;
+    HW_PCX_L2I   = (info[2] & ((int)1 << 28)) != 0;
+
+
+    /* copy for some backup usage */
+    HW_x64       = HW_LM;
+    HW_PREFETCHW = HW_3DNOWPREFETCH;
+  }
+
+  if (nExIds >= 0x80000004)
+  {
+    cpu_brand[48] = '\0';
+    cpuid(info,0x80000002);
+    cpu_brand[0] = (char)(info[0] >> 0) & 0xff;
+    cpu_brand[1] = (char)(info[0] >> 8) & 0xff;
+    cpu_brand[2] = (char)(info[0] >> 16) & 0xff;
+    cpu_brand[3] = (char)(info[0] >> 24) & 0xff;
+    cpu_brand[4] = (char)(info[1] >> 0) & 0xff;
+    cpu_brand[5] = (char)(info[1] >> 8) & 0xff;
+    cpu_brand[6] = (char)(info[1] >> 16) & 0xff;
+    cpu_brand[7] = (char)(info[1] >> 24) & 0xff;
+    cpu_brand[8] = (char)(info[2] >> 0) & 0xff;
+    cpu_brand[9] = (char)(info[2] >> 8) & 0xff;
+    cpu_brand[10] = (char)(info[2] >> 16) & 0xff;
+    cpu_brand[11] = (char)(info[2] >> 24) & 0xff;
+    cpu_brand[12] = (char)(info[3] >> 0) & 0xff;
+    cpu_brand[13] = (char)(info[3] >> 8) & 0xff;
+    cpu_brand[14] = (char)(info[3] >> 16) & 0xff;
+    cpu_brand[15] = (char)(info[3] >> 24) & 0xff;
+    cpuid(info,0x80000003);
+    cpu_brand[16] = (char)(info[0] >> 0) & 0xff;
+    cpu_brand[17] = (char)(info[0] >> 8) & 0xff;
+    cpu_brand[18] = (char)(info[0] >> 16) & 0xff;
+    cpu_brand[19] = (char)(info[0] >> 24) & 0xff;
+    cpu_brand[20] = (char)(info[1] >> 0) & 0xff;
+    cpu_brand[21] = (char)(info[1] >> 8) & 0xff;
+    cpu_brand[22] = (char)(info[1] >> 16) & 0xff;
+    cpu_brand[23] = (char)(info[1] >> 24) & 0xff;
+    cpu_brand[24] = (char)(info[2] >> 0) & 0xff;
+    cpu_brand[25] = (char)(info[2] >> 8) & 0xff;
+    cpu_brand[26] = (char)(info[2] >> 16) & 0xff;
+    cpu_brand[27] = (char)(info[2] >> 24) & 0xff;
+    cpu_brand[28] = (char)(info[3] >> 0) & 0xff;
+    cpu_brand[29] = (char)(info[3] >> 8) & 0xff;
+    cpu_brand[30] = (char)(info[3] >> 16) & 0xff;
+    cpu_brand[31] = (char)(info[3] >> 24) & 0xff;
+    cpuid(info,0x80000004);
+    cpu_brand[32] = (char)(info[0] >> 0) & 0xff;
+    cpu_brand[33] = (char)(info[0] >> 8) & 0xff;
+    cpu_brand[34] = (char)(info[0] >> 16) & 0xff;
+    cpu_brand[35] = (char)(info[0] >> 24) & 0xff;
+    cpu_brand[36] = (char)(info[1] >> 0) & 0xff;
+    cpu_brand[37] = (char)(info[1] >> 8) & 0xff;
+    cpu_brand[38] = (char)(info[1] >> 16) & 0xff;
+    cpu_brand[39] = (char)(info[1] >> 24) & 0xff;
+    cpu_brand[40] = (char)(info[2] >> 0) & 0xff;
+    cpu_brand[41] = (char)(info[2] >> 8) & 0xff;
+    cpu_brand[42] = (char)(info[2] >> 16) & 0xff;
+    cpu_brand[43] = (char)(info[2] >> 24) & 0xff;
+    cpu_brand[44] = (char)(info[3] >> 0) & 0xff;
+    cpu_brand[45] = (char)(info[3] >> 8) & 0xff;
+    cpu_brand[46] = (char)(info[3] >> 16) & 0xff;
+    cpu_brand[47] = (char)(info[3] >> 24) & 0xff;
+  }
+
+  if (nExIds >= 0x80000006)
+  {
+    cpuid(info,0x80000006);
   }
 }
 
@@ -561,10 +716,48 @@ void all_cpu_flags(void)
   if (HW_SSE) strncat(s, "sse ", mc);
   if (HW_SSE2) strncat(s, "sse2 ", mc);
   if (HW_SS) strncat(s, "ss ", mc);
-  if (HW_HTT) strncat(s, "htt ", mc);
+  if (HW_HTT) strncat(s, "ht ", mc);
   if (HW_TM) strncat(s, "tm ", mc);
   if (HW_IA64) strncat(s, "ia64 ", mc);
   if (HW_PBE) strncat(s, "pbe ", mc);
+
+  if (HW_SYSCALL) strncat(s, "syscall ", mc);
+  if (HW_MP) strncat(s, "mp ", mc);
+  if (HW_NX) strncat(s, "nx ", mc);
+  if (HW_MMEXT) strncat(s, "mmext ", mc);
+  if (HW_FXSR_OPT) strncat(s, "fxsr_opt ", mc);
+  if (HW_PDPE1GB) strncat(s, "pdpe1gb ", mc);
+  if (HW_RDTSCP) strncat(s, "rdtscp ", mc);
+  if (HW_LM) strncat(s, "lm ", mc);
+  if (HW_3DNOWEXT) strncat(s, "3dnowext ", mc);
+  if (HW_3DNOW) strncat(s, "3dnow ", mc);
+
+
+  if (HW_LAHF_LM) strncat(s, "lahf_lm ", mc);
+  if (HW_CMP_LEGACY) strncat(s, "cmp_legacy ", mc);
+  if (HW_SVM) strncat(s, "svm ", mc);
+  if (HW_EXTAPIC) strncat(s, "extapic ", mc);
+  if (HW_CR8_LEGACY) strncat(s, "cr8_legacy ", mc);
+  if (HW_ABM) strncat(s, "abm ", mc);
+  if (HW_SSE4A) strncat(s, "sse4a ", mc);
+  if (HW_MISALIGNSSE) strncat(s, "misalignsse ", mc);
+  if (HW_3DNOWPREFETCH) strncat(s, "3dnowprefetch ", mc);
+  if (HW_OSVW) strncat(s, "osvw ", mc);
+  if (HW_IBS) strncat(s, "ibs ", mc);
+  if (HW_XOP) strncat(s, "xop ", mc);
+  if (HW_SKINIT) strncat(s, "skinit ", mc);
+  if (HW_WDT) strncat(s, "wdt ", mc);
+  if (HW_IWP) strncat(s, "iwp ", mc);
+  if (HW_FMA4) strncat(s, "fma4 ", mc);
+  if (HW_TCE) strncat(s, "tce ", mc);
+  if (HW_NODEID_MSR) strncat(s, "nodeid_msr ", mc);
+  if (HW_TBM) strncat(s, "tbm ", mc);
+  if (HW_TOPOEXT) strncat(s, "topoext ", mc);
+  if (HW_PERFCTR_CORE) strncat(s, "perfctr_core ", mc);
+  if (HW_PERFCTR_NB) strncat(s, "perfctr_nb ", mc);
+  if (HW_DBX) strncat(s, "dbx ", mc);
+  if (HW_PERFTSC) strncat(s, "perftsc ", mc);
+  if (HW_PCX_L2I) strncat(s, "pcx_l2i ", mc);
 
   printf("CPU flags: %s\n", s);
   free(s);
