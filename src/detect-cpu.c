@@ -1,7 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
+
+/* detect-cpu.c
+
+written by: Oliver Cordes 2019-07-01
+changed by: Oliver Cordes 2019-07-01
+
+*/
+
+
+#define __author__ "Oliver Cordes"
+#define __version__ "0.1.0"
+#define __copyright__ "(C) Copyright 2019"
 
 
 /* this code is heavily inspired by
@@ -22,6 +35,7 @@
 
 */
 
+/* define some cpuid calls for any OS */
 
 #ifdef _WIN32
 
@@ -339,14 +353,13 @@ void get_cpu_flags(void)
   cpuid(info, 0);
   nIds = info[0];   /* the maximum leaf for question with cpuid */
 
-  printf("%x\n", nIds);
 
   /* read the vendor string */
   cpu_manufacturer_id(info[1], info[2], info[3]);
   set_cpu_type();
 
   cpuid(info, 0x80000000);
-  nExIds = info[0];
+  nExIds = info[0];  /* the maximum leaf for extended couid questions*/
 
   /* Detect Features */
   if (nIds >= 0x00000001)
@@ -662,8 +675,8 @@ int get_gcc_arch_type(void)
 
 void report_cpu_data(void)
 {
-  printf("vendor: %s\n", cpu_id_str);
-  printf("cpu_type=%i\n", cpu_type);
+  printf("Vendor: %s\n", cpu_id_str);
+  printf("Brand : %s\n", cpu_brand);
 }
 
 
@@ -759,20 +772,44 @@ void all_cpu_flags(void)
   if (HW_PERFTSC) strncat(s, "perftsc ", mc);
   if (HW_PCX_L2I) strncat(s, "pcx_l2i ", mc);
 
-  printf("CPU flags: %s\n", s);
+  printf("Flags : %s\n", s);
   free(s);
 }
 
 
+#define action_arch 0
+#define action_info 1
+
 int main(int argc, char* argv[])
 {
-  get_cpu_flags();
+    int ch;
 
-  report_cpu_data();
+    int action = action_arch;
 
-  all_cpu_flags();
+    while ((ch = getopt(argc, argv, "av")) != -1)
+        switch(ch)
+        {
+          case 'a':
+            action = action_info;
+            break;
+          case 'v':
+            break;
+        }
 
-  cpu_arch_type();
+    /* detect all flags */
+    get_cpu_flags();
 
-  return 0;
+    switch(action)
+    {
+      case action_arch:
+        cpu_arch_type();
+        break;
+      case action_info:
+        report_cpu_data();
+        all_cpu_flags();
+        break;
+    }
+
+
+    return 0;
 }
