@@ -255,6 +255,7 @@ typedef struct {
 #define intel_cascadelake     119
 
 #define amd_athlon64          200
+#define amd_athlon64_sse3     201
 
 
 _cpu_arch cpu_archs[] = {{intel_core2, "core2"},
@@ -656,6 +657,19 @@ int get_gcc_arch_type_intel(void)
 }
 
 
+int get_gcc_arch_type_amd(void)
+{
+  if (HW_MMX && HW_SSE && HW_SSE2 && HW_3DNOW && HW_3DNOWEXT)
+  {
+    if (HW_SSE3)
+      return amd_athlon64_sse3;
+    else
+      return amd_athlon64;
+  }
+  else
+    return cpu_x86_64;
+}
+
 int get_gcc_arch_type(void)
 {
   switch(cpu_type)
@@ -664,7 +678,7 @@ int get_gcc_arch_type(void)
         return get_gcc_arch_type_intel();
         break;
     case CPU_AMD:
-        return cpu_x86_64;
+        return get_gcc_arch_type_amd();
         break;
     default:
         return cpu_x86_64;
