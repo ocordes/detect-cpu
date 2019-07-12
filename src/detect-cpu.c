@@ -279,6 +279,7 @@ _cpu_arch cpu_archs[] = {{intel_core2, "core2"},
                          {intel_icelake_server, "icelake-server"},
                          {intel_cascadelake, "cascadelake"},
                          {amd_athlon64, "athlon64"},
+                         {amd_athlon64_sse3, "amd_athlon64_sse3"},
                          {cpu_x86_64, NULL}
                        };
 
@@ -335,9 +336,10 @@ void set_cpu_type(void)
   while (vendor_string[i].id != CPU_UNKNOWN)
   {
     if (strcmp(cpu_id_str, vendor_string[i].vendor) == 0)
+    {
       cpu_type = vendor_string[i].id;
       return;
-
+    }
     ++i;
   }
 
@@ -672,6 +674,7 @@ int get_gcc_arch_type_amd(void)
 
 int get_gcc_arch_type(void)
 {
+  printf("%i %i\n", cpu_type, CPU_AMD );
   switch(cpu_type)
   {
     case CPU_Intel:
