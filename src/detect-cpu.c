@@ -121,6 +121,7 @@ int HW_SSE3 = 0;
 int HW_PCLMUL = 0;
 int HW_DTES64 = 0;
 int HW_MONITOR = 0;
+#define HW_MWAIT HW_MONITOR
 int HW_DS_CPL = 0;
 int HW_VMX = 0;
 int HW_SMX = 0;
@@ -178,7 +179,7 @@ int HW_IBS = 0;
 int HW_XOP = 0;
 int HW_SKINIT = 0;
 int HW_WDT = 0;
-int HW_IWP = 0;
+int HW_LWP = 0;
 int HW_FMA4 = 0;
 int HW_TCE = 0;
 int HW_NODEID_MSR = 0;
@@ -189,6 +190,8 @@ int HW_PERFCTR_NB = 0;
 int HW_DBX = 0;
 int HW_PERFTSC = 0;
 int HW_PCX_L2I = 0;
+int HW_MWAITX = 0;
+#define HW_MWAITT HW_WAITX
 
 
 /*  Misc. */
@@ -197,7 +200,9 @@ int HW_BMI = 0;
 int HW_BMI2 = 0;
 int HW_RDSEED = 0;
 int HW_ADX = 0;
+#define HW_ADCX HW_ADX
 int HW_CLFLUSHOPT = 0;
+int HW_CLWB = 0;
 int HW_PREFETCHWT1 = 0;
 int HW_PREFETCHW = 0;
 
@@ -225,6 +230,10 @@ int HW_XSAVEC = 0;
 int HW_XSAVES = 0;
 int HW_XSAVEOPT = 0;
 int HW_XGETBV = 0;
+
+
+/* AMD-defined CPU features, CPUID level 0x80000008 (EBX) */
+int HW_CLZERO = 0;
 
 /* Intel CPUs */
 
@@ -258,6 +267,15 @@ typedef struct {
 
 #define amd_athlon64          200
 #define amd_athlon64_sse3     201
+#define amd_amdfam10          202
+#define amd_bdver1            203
+#define amd_bdver2            204
+#define amd_bdver3            205
+#define amd_bdver4            206
+#define amd_znver1            207
+#define amd_znver2            208
+#define amd_btver1            209
+#define amd_btver2            210
 
 
 _cpu_arch cpu_archs[] = {{intel_core2, "core2"},
@@ -281,7 +299,16 @@ _cpu_arch cpu_archs[] = {{intel_core2, "core2"},
                          {intel_icelake_server, "icelake-server"},
                          {intel_cascadelake, "cascadelake"},
                          {amd_athlon64, "athlon64"},
-                         {amd_athlon64_sse3, "amd_athlon64_sse3"},
+                         {amd_athlon64_sse3, "athlon64_sse3"},
+                         {amd_amdfam10, "amdfam10"},
+                         {amd_bdver1, "bdver1"},
+                         {amd_bdver2, "bdver2"},
+                         {amd_bdver3, "bdver3"},
+                         {amd_bdver4, "bdver4"},
+                         {amd_znver1, "znver1"},
+                         {amd_znver2, "znver2"},
+                         {amd_btver1, "btver1"},
+                         {amd_btver2, "btver1"},
                          {cpu_x86_64, NULL}
                        };
 
@@ -370,7 +397,7 @@ void get_cpu_flags(void)
   /* Detect Features */
   if (nIds >= 0x00000001)
   {
-    cpuid(info,0x00000001);
+    cpuid(info, 0x00000001);
     HW_FPU     = (info[3] & ((int)1 << 0)) != 0;
 	  HW_VME     = (info[3] & ((int)1 << 1)) != 0;
 	  HW_DE      = (info[3] & ((int)1 << 2)) != 0;
@@ -440,7 +467,7 @@ void get_cpu_flags(void)
 
   if (nIds >= 0x00000007)
   {
-    cpuid(info,0x00000007);
+    cpuid(info, 0x00000007);
     HW_FSGSBASE    = (info[1] & ((int)1 <<  0)) != 0;
     HW_BMI         = (info[1] & ((int)1 <<  3)) != 0;
     HW_AVX2        = (info[1] & ((int)1 <<  5)) != 0;
@@ -448,6 +475,7 @@ void get_cpu_flags(void)
     HW_RDSEED      = (info[1] & ((int)1 << 18)) != 0;
     HW_ADX         = (info[1] & ((int)1 << 19)) != 0;
     HW_CLFLUSHOPT  = (info[1] & ((int)1 << 23)) != 0;
+    HW_CLWB        = (info[1] & ((int)1 << 24)) != 0;
     HW_SHA         = (info[1] & ((int)1 << 29)) != 0;
     HW_PREFETCHWT1 = (info[2] & ((int)1 <<  0)) != 0;
 
@@ -464,7 +492,7 @@ void get_cpu_flags(void)
 
   if (nIds >= 0x0000000d)
   {
-    cpuid(info,0x0000000d);
+    cpuid(info, 0x0000000d);
 
     HW_XSAVEOPT = (info[0] & ((int)1 << 0)) != 0;
     HW_XSAVEC   = (info[0] & ((int)1 << 1)) != 0;
@@ -474,7 +502,7 @@ void get_cpu_flags(void)
 
   if (nExIds >= 0x80000001)
   {
-    cpuid(info,0x80000001);
+    cpuid(info, 0x80000001);
 
     /*
     HW_FPU       = (info[3] & ((int)1 <<  0)) != 0;
@@ -522,7 +550,7 @@ void get_cpu_flags(void)
     HW_XOP       = (info[2] & ((int)1 << 11)) != 0;
     HW_SKINIT    = (info[2] & ((int)1 << 12)) != 0;
     HW_WDT       = (info[2] & ((int)1 << 13)) != 0;
-    HW_IWP       = (info[2] & ((int)1 << 15)) != 0;
+    HW_LWP       = (info[2] & ((int)1 << 15)) != 0;
     HW_FMA4      = (info[2] & ((int)1 << 16)) != 0;
     HW_TCE       = (info[2] & ((int)1 << 17)) != 0;
     HW_NODEID_MSR = (info[2] & ((int)1 << 19)) != 0;
@@ -533,6 +561,7 @@ void get_cpu_flags(void)
     HW_DBX       = (info[2] & ((int)1 << 26)) != 0;
     HW_PERFTSC   = (info[2] & ((int)1 << 27)) != 0;
     HW_PCX_L2I   = (info[2] & ((int)1 << 28)) != 0;
+    HW_MWAITX    = (info[2] & ((int)1 << 29)) != 0;
 
 
     /* copy for some backup usage */
@@ -543,7 +572,7 @@ void get_cpu_flags(void)
   if (nExIds >= 0x80000004)
   {
     cpu_brand[48] = '\0';
-    cpuid(info,0x80000002);
+    cpuid(info, 0x80000002);
     cpu_brand[0] = (char)(info[0] >> 0) & 0xff;
     cpu_brand[1] = (char)(info[0] >> 8) & 0xff;
     cpu_brand[2] = (char)(info[0] >> 16) & 0xff;
@@ -560,7 +589,7 @@ void get_cpu_flags(void)
     cpu_brand[13] = (char)(info[3] >> 8) & 0xff;
     cpu_brand[14] = (char)(info[3] >> 16) & 0xff;
     cpu_brand[15] = (char)(info[3] >> 24) & 0xff;
-    cpuid(info,0x80000003);
+    cpuid(info, 0x80000003);
     cpu_brand[16] = (char)(info[0] >> 0) & 0xff;
     cpu_brand[17] = (char)(info[0] >> 8) & 0xff;
     cpu_brand[18] = (char)(info[0] >> 16) & 0xff;
@@ -577,7 +606,7 @@ void get_cpu_flags(void)
     cpu_brand[29] = (char)(info[3] >> 8) & 0xff;
     cpu_brand[30] = (char)(info[3] >> 16) & 0xff;
     cpu_brand[31] = (char)(info[3] >> 24) & 0xff;
-    cpuid(info,0x80000004);
+    cpuid(info, 0x80000004);
     cpu_brand[32] = (char)(info[0] >> 0) & 0xff;
     cpu_brand[33] = (char)(info[0] >> 8) & 0xff;
     cpu_brand[34] = (char)(info[0] >> 16) & 0xff;
@@ -598,7 +627,13 @@ void get_cpu_flags(void)
 
   if (nExIds >= 0x80000006)
   {
-    cpuid(info,0x80000006);
+    cpuid(info, 0x80000006);
+  }
+
+  if (nExIds >= 0x80000008)
+  {
+    cpuid(info, 0x80000008);
+    HW_CLZERO    = (info[1] & ((int)1 <<  0)) != 0;
   }
 }
 
@@ -664,10 +699,46 @@ int get_gcc_arch_type_intel(void)
 
 int get_gcc_arch_type_amd(void)
 {
+  if (HW_BMI && HW_BMI2 && HW_F16C && HW_FMA && HW_FSGSBASE && HW_AVX
+      && HW_AVX2 && HW_ADCX && HW_RDSEED && HW_MWAITX && HW_SHA && HW_CLZERO
+      && HW_AES && HW_PCLMUL && HW_CX16 && HW_MOVBE && HW_MMX && HW_SSE
+      && HW_SSE2 && HW_SSE3 && HW_SSE4A && HW_SSSE3 && HW_SSE41 && HW_SSE42
+      && HW_ABM && HW_XSAVEC && HW_XSAVES && HW_CLFLUSHOPT && HW_POPCNT)
+  {
+    if (HW_CLWB)
+      return amd_znver2;
+    else
+      return amd_znver1;
+  }
+
+
+  if (HW_FMA4 && HW_AVX && HW_XOP && HW_LWP && HW_AES && HW_PCLMUL && HW_CX16
+     && HW_MMX && HW_SSE && HW_SSE2 && HW_SSE3 && HW_SSE4A && HW_SSSE3
+     && HW_SSE41 && HW_SSE42 && HW_ABM)
+  {
+    if (HW_BMI && HW_TBM && HW_F16C && HW_FMA)
+    {
+      if (HW_FSGSBASE)
+      {
+        if (HW_BMI2 && HW_AVX2 && HW_MOVBE)
+          return amd_bdver4;
+        else
+          return amd_bdver3;
+      }
+      else
+        return amd_bdver2;
+    }
+    else
+      return amd_bdver1;
+  }
+
   if (HW_MMX && HW_SSE && HW_SSE2 && HW_3DNOW && HW_3DNOWEXT)
   {
     if (HW_SSE3)
-      return amd_athlon64_sse3;
+      if (HW_SSE4A && HW_ABM)
+        return amd_amdfam10;
+      else
+        return amd_athlon64_sse3;
     else
       return amd_athlon64;
   }
@@ -781,7 +852,7 @@ void all_cpu_flags(void)
   if (HW_XOP) strncat(s, "xop ", mc);
   if (HW_SKINIT) strncat(s, "skinit ", mc);
   if (HW_WDT) strncat(s, "wdt ", mc);
-  if (HW_IWP) strncat(s, "iwp ", mc);
+  if (HW_LWP) strncat(s, "lwp ", mc);
   if (HW_FMA4) strncat(s, "fma4 ", mc);
   if (HW_TCE) strncat(s, "tce ", mc);
   if (HW_NODEID_MSR) strncat(s, "nodeid_msr ", mc);
@@ -792,6 +863,7 @@ void all_cpu_flags(void)
   if (HW_DBX) strncat(s, "dbx ", mc);
   if (HW_PERFTSC) strncat(s, "perftsc ", mc);
   if (HW_PCX_L2I) strncat(s, "pcx_l2i ", mc);
+  if (HW_MWAITX) strncat(s, "mwaitx ", mc);
 
   if (HW_SSE3) strncat(s, "sse3 ", mc);
   if (HW_PCLMUL) strncat(s, "pclmul ", mc);
