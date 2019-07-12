@@ -194,35 +194,45 @@ int HW_MWAITX = 0;
 #define HW_MWAITT HW_WAITX
 
 
-/*  Misc. */
-int HW_x64 = 0;
+/* extended feature flags EAX=7 */
+
+int HW_FSGSBASE = 0;
+int HW_SGX = 0;
 int HW_BMI = 0;
+int HW_HLE = 0;
+int HW_AVX2 = 0;
+int HW_SMEP = 0;
 int HW_BMI2 = 0;
+int HW_ERMS = 0;
+int HW_INVPCID = 0;
+int HW_RTM = 0;
+int HW_PQM = 0;
+int HW_MPX = 0;
+int HW_PQE = 0;
+int HW_AVX512F = 0;
+int HW_AVX512DQ = 0;
 int HW_RDSEED = 0;
 int HW_ADX = 0;
 #define HW_ADCX HW_ADX
+int HW_SMAP = 0;
+int HW_AVX512IFMA = 0;
+int HW_PCOMMIT = 0;
 int HW_CLFLUSHOPT = 0;
 int HW_CLWB = 0;
+int HW_INTEL_PT = 0;
+int HW_AVX512PF = 0;
+int HW_AVX512ER = 0;
+int HW_AVX512CD = 0;
+int HW_SHA = 0;
+int HW_AVX512BW = 0;
+int HW_AVX512VL = 0;
+
+
+/*  Misc. */
+int HW_x64 = 0;
+
 int HW_PREFETCHWT1 = 0;
 int HW_PREFETCHW = 0;
-
-/*  SIMD: 128-bit */
-int HW_SHA = 0;
-
-/*  SIMD: 256-bit */
-int HW_FSGSBASE = 0;
-int HW_AVX2 = 0;
-
-/*  SIMD: 512-bit */
-int HW_AVX512F = 0;    /*  AVX512 Foundation */
-int HW_AVX512CD = 0;   /*  AVX512 Conflict Detection */
-int HW_AVX512PF = 0;   /*  AVX512 Prefetch */
-int HW_AVX512ER = 0;   /*  AVX512 Exponential + Reciprocal */
-int HW_AVX512VL = 0;   /*  AVX512 Vector Length Extensions */
-int HW_AVX512BW = 0;   /*  AVX512 Byte + Word */
-int HW_AVX512DQ = 0;   /*  AVX512 Doubleword + Quadword */
-int HW_AVX512IFMA = 0; /*  AVX512 Integer 52-bit Fused Multiply-Add */
-int HW_AVX512VBMI = 0; /*  AVX512 Vector Byte Manipulation Instructions */
 
 
 /* Processor Extended State Enumeration Main Leaf (EAX = 0DH, ECX = 0) */
@@ -234,6 +244,9 @@ int HW_XGETBV = 0;
 
 /* AMD-defined CPU features, CPUID level 0x80000008 (EBX) */
 int HW_CLZERO = 0;
+
+
+
 
 /* Intel CPUs */
 
@@ -469,25 +482,36 @@ void get_cpu_flags(void)
   {
     cpuid(info, 0x00000007);
     HW_FSGSBASE    = (info[1] & ((int)1 <<  0)) != 0;
+    HW_SGX         = (info[1] & ((int)1 <<  2)) != 0;
     HW_BMI         = (info[1] & ((int)1 <<  3)) != 0;
+    HW_HLE         = (info[1] & ((int)1 <<  4)) != 0;
     HW_AVX2        = (info[1] & ((int)1 <<  5)) != 0;
+    HW_SMEP        = (info[1] & ((int)1 <<  7)) != 0;
     HW_BMI2        = (info[1] & ((int)1 <<  8)) != 0;
+    HW_ERMS        = (info[1] & ((int)1 <<  9)) != 0;
+    HW_INVPCID     = (info[1] & ((int)1 << 10)) != 0;
+    HW_RTM         = (info[1] & ((int)1 << 11)) != 0;
+    HW_PQM         = (info[1] & ((int)1 << 12)) != 0;
+    HW_MPX         = (info[1] & ((int)1 << 14)) != 0;
+    HW_PQE         = (info[1] & ((int)1 << 15)) != 0;
+    HW_AVX512F     = (info[1] & ((int)1 << 16)) != 0;
+    HW_AVX512DQ    = (info[1] & ((int)1 << 17)) != 0;
     HW_RDSEED      = (info[1] & ((int)1 << 18)) != 0;
     HW_ADX         = (info[1] & ((int)1 << 19)) != 0;
+    HW_SMAP        = (info[1] & ((int)1 << 20)) != 0;
+    HW_AVX512IFMA  = (info[1] & ((int)1 << 21)) != 0;
+    HW_PCOMMIT     = (info[1] & ((int)1 << 22)) != 0;
     HW_CLFLUSHOPT  = (info[1] & ((int)1 << 23)) != 0;
     HW_CLWB        = (info[1] & ((int)1 << 24)) != 0;
-    HW_SHA         = (info[1] & ((int)1 << 29)) != 0;
-    HW_PREFETCHWT1 = (info[2] & ((int)1 <<  0)) != 0;
-
-    HW_AVX512F     = (info[1] & ((int)1 << 16)) != 0;
-    HW_AVX512CD    = (info[1] & ((int)1 << 28)) != 0;
+    HW_INTEL_PT    = (info[1] & ((int)1 << 25)) != 0;
     HW_AVX512PF    = (info[1] & ((int)1 << 26)) != 0;
     HW_AVX512ER    = (info[1] & ((int)1 << 27)) != 0;
-    HW_AVX512VL    = (info[1] & ((int)1 << 31)) != 0;
+    HW_AVX512CD    = (info[1] & ((int)1 << 28)) != 0;
+    HW_SHA         = (info[1] & ((int)1 << 29)) != 0;
     HW_AVX512BW    = (info[1] & ((int)1 << 30)) != 0;
-    HW_AVX512DQ    = (info[1] & ((int)1 << 17)) != 0;
-    HW_AVX512IFMA  = (info[1] & ((int)1 << 21)) != 0;
-    HW_AVX512VBMI  = (info[2] & ((int)1 <<  1)) != 0;
+    HW_AVX512VL    = (info[1] & ((int)1 << 31)) != 0;
+
+    HW_PREFETCHWT1 = (info[2] & ((int)1 <<  0)) != 0;
   }
 
   if (nIds >= 0x0000000d)
@@ -897,6 +921,38 @@ void all_cpu_flags(void)
   if (HW_RDRND) strncat(s, "rdrnd ", mc);
   if (HW_HYPERVISOR) strncat(s, "hypervisor ", mc);
 
+  if (HW_FSGSBASE) strncat(s, "fsgsbase ", mc);
+  if (HW_SGX) strncat(s, "sgx ", mc);
+  if (HW_BMI) strncat(s, "bmi ", mc);
+  if (HW_HLE) strncat(s, "hle ", mc);
+  if (HW_AVX2) strncat(s, "avx2 ", mc);
+  if (HW_SMEP) strncat(s, "smep ", mc);
+  if (HW_BMI2) strncat(s, "bmi2 ", mc);
+  if (HW_ERMS) strncat(s, "erms", mc);
+  if (HW_INVPCID) strncat(s, "invpcid ", mc);
+  if (HW_RTM) strncat(s, "rtm ", mc);
+  if (HW_PQM) strncat(s, "pqm ", mc);
+  if (HW_MPX) strncat(s, "mpx ", mc);
+  if (HW_PQE) strncat(s, "pqe ", mc);
+  if (HW_AVX512F) strncat(s, "avx512f ", mc);
+  if (HW_AVX512DQ) strncat(s, "avx512dq ", mc);
+  if (HW_RDSEED) strncat(s, "rdseed ", mc);
+  if (HW_ADX) strncat(s, "adx ", mc);
+  if (HW_SMAP) strncat(s, "smap ", mc);
+  if (HW_AVX512IFMA) strncat(s, "avx512ifma ", mc);
+  if (HW_PCOMMIT) strncat(s, "pcommit ", mc);
+  if (HW_CLFLUSHOPT) strncat(s, "clflushopt ", mc);
+  if (HW_CLWB) strncat(s, "clwb ", mc);
+  if (HW_INTEL_PT) strncat(s, "intel_pt ", mc);
+  if (HW_AVX512PF) strncat(s, "avx512pf ", mc);
+  if (HW_AVX512ER) strncat(s, "avx512er ", mc);
+  if (HW_AVX512CD) strncat(s, "avx512cd ", mc);
+  if (HW_SHA) strncat(s, "sha ", mc);
+  if (HW_AVX512BW) strncat(s, "avx512bw ", mc);
+  if (HW_AVX512VL) strncat(s, "avx512vl ", mc);
+
+
+  if (HW_CLZERO) strncat(s, "clzero ", mc);
 
   printf("Flags          : %s\n", s);
   free(s);
