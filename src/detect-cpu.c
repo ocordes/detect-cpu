@@ -55,6 +55,8 @@ void cpuid(int info[4], int InfoType){
 
 char cpu_id_str[13];
 char cpu_brand[49];
+int cpuid_level;
+int cpuid_ext_level;
 
 
 typedef struct {
@@ -355,7 +357,7 @@ void get_cpu_flags(void)
 
   cpuid(info, 0);
   nIds = info[0];   /* the maximum leaf for question with cpuid */
-
+  cpuid_level = nIds;
 
   /* read the vendor string */
   cpu_manufacturer_id(info[1], info[2], info[3]);
@@ -363,6 +365,7 @@ void get_cpu_flags(void)
 
   cpuid(info, 0x80000000);
   nExIds = info[0];  /* the maximum leaf for extended couid questions*/
+  cpuid_ext_level = nExIds;
 
   /* Detect Features */
   if (nIds >= 0x00000001)
@@ -674,7 +677,6 @@ int get_gcc_arch_type_amd(void)
 
 int get_gcc_arch_type(void)
 {
-  printf("%i %i\n", cpu_type, CPU_AMD );
   switch(cpu_type)
   {
     case CPU_Intel:
@@ -692,8 +694,10 @@ int get_gcc_arch_type(void)
 
 void report_cpu_data(void)
 {
-  printf("Vendor: %s\n", cpu_id_str);
-  printf("Brand : %s\n", cpu_brand);
+  printf("Vendor         : %s\n", cpu_id_str);
+  printf("Brand          : %s\n", cpu_brand);
+  printf("cpuid level    : 0x%x\n", cpuid_level);
+  printf("cpuid ext level: 0x%x\n", cpuid_ext_level);
 }
 
 
@@ -789,7 +793,40 @@ void all_cpu_flags(void)
   if (HW_PERFTSC) strncat(s, "perftsc ", mc);
   if (HW_PCX_L2I) strncat(s, "pcx_l2i ", mc);
 
-  printf("Flags : %s\n", s);
+  if (HW_SSE3) strncat(s, "sse3 ", mc);
+  if (HW_PCLMUL) strncat(s, "pclmul ", mc);
+  if (HW_DTES64) strncat(s, "dtes64 ", mc);
+  if (HW_MONITOR) strncat(s, "monitor ", mc);
+  if (HW_DS_CPL) strncat(s, "ds_cpl ", mc);
+  if (HW_VMX) strncat(s, "vmx ", mc);
+  if (HW_SMX) strncat(s, "smx ", mc);
+  if (HW_EST) strncat(s, "est ", mc);
+  if (HW_TM2) strncat(s, "tm2 ", mc);
+  if (HW_SSSE3) strncat(s, "ssse3 ", mc);
+  if (HW_CNXT_ID) strncat(s, "cnxt_id ", mc);
+  if (HW_SDBG) strncat(s, "sdbg ", mc);
+  if (HW_FMA) strncat(s, "fma ", mc);
+  if (HW_CX16) strncat(s, "cx16 ", mc);
+  if (HW_XTPR) strncat(s, "xtpr ", mc);
+  if (HW_PDCM) strncat(s, "pdcm ", mc);
+  if (HW_PCID) strncat(s, "pcid ", mc);
+  if (HW_DCA) strncat(s, "dca ", mc);
+  if (HW_SSE41) strncat(s, "sse41 ", mc);
+  if (HW_SSE42) strncat(s, "sse42 ", mc);
+  if (HW_X2APIC) strncat(s, "x2apic ", mc);
+  if (HW_MOVBE) strncat(s, "movbe ", mc);
+  if (HW_POPCNT) strncat(s, "popcnt ", mc);
+  if (HW_TSC_DEADLINE) strncat(s, "tsc_deadline ", mc);
+  if (HW_AES) strncat(s, "aes ", mc);
+  if (HW_XSAVE) strncat(s, "xsave ", mc);
+  if (HW_OSXSAVE) strncat(s, "osxsave ", mc);
+  if (HW_AVX) strncat(s, "avx ", mc);
+  if (HW_F16C) strncat(s, "f16c ", mc);
+  if (HW_RDRND) strncat(s, "rdrnd ", mc);
+  if (HW_HYPERVISOR) strncat(s, "hypervisor ", mc);
+
+
+  printf("Flags          : %s\n", s);
   free(s);
 }
 
