@@ -729,51 +729,57 @@ int get_gcc_arch_type_intel(void)
 
 int get_gcc_arch_type_amd(void)
 {
-  if (HW_BMI && HW_BMI2 && HW_F16C && HW_FMA && HW_FSGSBASE && HW_AVX
-      && HW_AVX2 && HW_ADCX && HW_RDSEED && HW_MWAITX && HW_SHA && HW_CLZERO
-      && HW_AES && HW_PCLMUL && HW_CX16 && HW_MOVBE && HW_MMX && HW_SSE
-      && HW_SSE2 && HW_SSE3 && HW_SSE4A && HW_SSSE3 && HW_SSE41 && HW_SSE42
-      && HW_ABM && HW_XSAVEC && HW_XSAVES && HW_CLFLUSHOPT && HW_POPCNT)
+  if (HW_MMX && HW_SSE && HW_SSE2)
   {
-    if (HW_CLWB)
-      return amd_znver2;
-    else
-      return amd_znver1;
-  }
-
-
-  if (HW_FMA4 && HW_AVX && HW_XOP && HW_LWP && HW_AES && HW_PCLMUL && HW_CX16
-     && HW_MMX && HW_SSE && HW_SSE2 && HW_SSE3 && HW_SSE4A && HW_SSSE3
-     && HW_SSE41 && HW_SSE42 && HW_ABM)
-  {
-    if (HW_BMI && HW_TBM && HW_F16C && HW_FMA)
+    if (HW_AVX && HW_AES && HW_PCLMUL && HW_CX16 && HW_SSE3 && HW_SSE4A
+        && HW_SSSE3 && HW_SSE41 && HW_SSE42 && HW_ABM)
     {
-      if (HW_FSGSBASE)
+      /* ZEN micro tech */
+      if (HW_BMI && HW_BMI2 && HW_F16C && HW_FMA && HW_FSGSBASE
+          && HW_AVX2 && HW_ADCX && HW_RDSEED && HW_MWAITX && HW_SHA && HW_CLZERO
+          && HW_MOVBE && HW_XSAVEC && HW_XSAVES && HW_CLFLUSHOPT && HW_POPCNT)
       {
-        if (HW_BMI2 && HW_AVX2 && HW_MOVBE)
-          return amd_bdver4;
+        if (HW_CLWB)
+          return amd_znver2;
         else
-          return amd_bdver3;
+          return amd_znver1;
+      }
+
+
+      if (HW_FMA4 && HW_XOP && HW_LWP)
+      {
+        if (HW_BMI && HW_TBM && HW_F16C && HW_FMA)
+        {
+          if (HW_FSGSBASE)
+          {
+            if (HW_BMI2 && HW_AVX2 && HW_MOVBE)
+              return amd_bdver4;
+            else
+              return amd_bdver3;
+          }
+          else
+            return amd_bdver2;
+        }
+        else
+          return amd_bdver1;
+        }
+    }
+
+    if (HW_3DNOW && HW_3DNOWEXT)
+    {
+      if (HW_SSE3)
+      {
+        if (HW_SSE4A && HW_ABM)
+          return amd_amdfam10;
+        else
+          return amd_athlon64_sse3;
       }
       else
-        return amd_bdver2;
+        return amd_athlon64;
     }
-    else
-      return amd_bdver1;
   }
 
-  if (HW_MMX && HW_SSE && HW_SSE2 && HW_3DNOW && HW_3DNOWEXT)
-  {
-    if (HW_SSE3)
-      if (HW_SSE4A && HW_ABM)
-        return amd_amdfam10;
-      else
-        return amd_athlon64_sse3;
-    else
-      return amd_athlon64;
-  }
-  else
-    return cpu_x86_64;
+  return cpu_x86_64;
 }
 
 int get_gcc_arch_type(void)
