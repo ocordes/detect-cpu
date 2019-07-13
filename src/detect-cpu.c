@@ -50,6 +50,10 @@ void cpuid(int info[4], int InfoType){
     __cpuid_count(InfoType, 0, info[0], info[1], info[2], info[3]);
 }
 
+void cpuidcx(int info[4], int InfoType, int cx) {
+    __cpuid_count(InfoType, cx, info[0], info[1], info[2], info[3]);
+}
+
 #endif
 
 
@@ -516,12 +520,14 @@ void get_cpu_flags(void)
 
   if (nIds >= 0x0000000d)
   {
-    cpuid(info, 0x0000000d);
+    /* EAX=0dh ECX=1 */
+    cpuidcx(info, 0x0000000d, 1);
 
     HW_XSAVEOPT = (info[0] & ((int)1 << 0)) != 0;
     HW_XSAVEC   = (info[0] & ((int)1 << 1)) != 0;
     HW_XGETBV   = ((info[0] & ((int)1 << 2)) != 0) && (info[2] == 1);
     HW_XSAVES   = (info[0] & ((int)1 << 3)) != 0;
+
   }
 
   if (nExIds >= 0x80000001)
@@ -953,6 +959,11 @@ void all_cpu_flags(void)
 
 
   if (HW_CLZERO) strncat(s, "clzero ", mc);
+
+  if (HW_XSAVEOPT) strncat(s, "xsaveopt ", mc);
+  if (HW_XSAVEC) strncat(s, "xsavec ", mc);
+  if (HW_XGETBV) strncat(s, "xgetbv ", mc);
+  if (HW_XSAVES) strncat(s, "xsaves ", mc);
 
   printf("Flags          : %s\n", s);
   free(s);
