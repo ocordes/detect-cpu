@@ -242,10 +242,14 @@ int HW_GFNI = 0;
 int HW_VAES = 0;
 int HW_VPCLMULQDQ = 0;
 int HW_AVX512VNNI = 0;
-int HW_AVX512BTALG = 0;
+int HW_AVX512BITALG = 0;
 int HW_AVX512VPOPCNTDQ = 0;
 int HW_RDPID = 0;
 int HW_SGX_LC = 0;
+
+int HW_AVX5124VNNIW = 0;
+int HW_AVX5124FMAPS = 0;
+int HW_PCONFIG = 0;
 
 /*  Misc. */
 int HW_x64 = 0;
@@ -546,10 +550,14 @@ void get_cpu_flags(void)
     HW_VAES        = (info[2] & ((int)1 <<  9)) != 0;
     HW_VPCLMULQDQ  = (info[2] & ((int)1 << 10)) != 0;
     HW_AVX512VNNI  = (info[2] & ((int)1 << 11)) != 0;
-    HW_AVX512BTALG = (info[2] & ((int)1 << 12)) != 0;
+    HW_AVX512BITALG = (info[2] & ((int)1 << 12)) != 0;
     HW_AVX512VPOPCNTDQ = (info[2] & ((int)1 << 14)) != 0;
     HW_RDPID       = (info[2] & ((int)1 << 22)) != 0;
     HW_SGX_LC      = (info[2] & ((int)1 << 30)) != 0;
+
+    HW_AVX5124VNNIW = (info[3] & ((int)1 <<  2)) != 0;
+    HW_AVX5124FMAPS = (info[3] & ((int)1 <<  3)) != 0;
+    HW_PCONFIG      = (info[3] & ((int)1 << 18)) != 0;
   }
 
   if (nIds >= 0x0000000d)
@@ -730,7 +738,6 @@ char *get_arch_name(int arch)
 }
 
 
-
 int get_gcc_arch_type_intel(void)
 {
   if (HW_MMX && HW_SSE && HW_SSE2 && HW_SSE3 && HW_SSSE3)
@@ -745,13 +752,56 @@ int get_gcc_arch_type_intel(void)
           {
             if (HW_MOVBE && HW_AVX2 && HW_FMA && HW_BMI && HW_BMI2)
             {
-              if (HW_RDSEED && HW_ADX && HW_PREFETCHW && HW_CLFLUSHOPT
-                  && HW_XSAVEC && HW_XSAVES)
-                return intel_skylake;
               if (HW_RDSEED && HW_ADX && HW_PREFETCHW)
-                return intel_broadwell;
-
-              return intel_haswell;
+              {
+                if (HW_CLFLUSHOPT && HW_XSAVEC && HW_XSAVES)
+                {
+                  if (HW_PKU && HW_AVX512F && HW_AVX512VL
+                      && HW_AVX512BW && HW_AVX512DQ && HW_AVX512CD)
+                  {
+                    if (HW_CLWB)
+                      {
+                        if (HW_AVX512VNNI)
+                          return intel_cascadelake;
+                        else
+                          return intel_skylake_avx512;
+                      }
+                    else
+                      /* cannonlake doesn't support CLWB! */
+                      if (HW_AVX512VBMI && HW_AVX512IFMA && HW_SHA && HW_UMIP)
+                      {
+                        if (HW_CLWB && HW_RDPID && HW_GFNI && HW_AVX512VBMI2
+                            && HW_AVX512VPOPCNTDQ && HW_AVX512BITALG
+                            && HW_AVX512VNNI && HW_VPCLMULQDQ && HW_VAES)
+                          {
+                            if (HW_PCONFIG)
+                              /* should detect HW_WBNOINVD which is not known */
+                              return intel_icelake_server;
+                            else
+                              return intel_icelake_client;
+                          }
+                        else
+                          return intel_cannonlake;
+                      }
+                  }
+                  else
+                    return intel_skylake;
+                }
+                else
+                  {
+                    if (HW_AVX512F && HW_AVX512PF && HW_AVX512ER && HW_AVX512CD)
+                    {
+                      if (HW_AVX5124VNNIW && HW_AVX5124FMAPS && HW_AVX512VPOPCNTDQ)
+                        return intel_knm;
+                      else
+                        return intel_knl;
+                    }
+                    else
+                      return intel_broadwell;
+                  }
+              }
+              else
+                return intel_haswell;
             }
             return intel_ivybridge;
           }
@@ -1049,11 +1099,14 @@ void all_cpu_flags(void)
   if (HW_VAES) strncat(s, "vaes ", mc);
   if (HW_VPCLMULQDQ) strncat(s, "vpclmulqdq ", mc);
   if (HW_AVX512VNNI) strncat(s, "avx512vmni ", mc);
-  if (HW_AVX512BTALG) strncat(s, "avx512btalg ", mc);
+  if (HW_AVX512BITALG) strncat(s, "avx512bitalg ", mc);
   if (HW_AVX512VPOPCNTDQ) strncat(s, "avx512vpopcntdq ", mc);
   if (HW_RDPID) strncat(s, "rdpid ", mc);
   if (HW_SGX_LC) strncat(s, "sgx_lc ", mc);
 
+  if (HW_AVX5124VNNIW) strncat(s, "avx5124vnniw ", mc);
+  if (HW_AVX5124FMAPS) strncat(s, "avx5124fmaps ", mc);
+  if (HW_PCONFIG) strncat(s, "pconfig ", mc);
 
   if (HW_CLZERO) strncat(s, "clzero ", mc);
 
