@@ -231,11 +231,26 @@ int HW_SHA = 0;
 int HW_AVX512BW = 0;
 int HW_AVX512VL = 0;
 
+int HW_PREFETCHWT1 = 0;
+int HW_AVX512VBMI = 0;
+int HW_UMIP = 0;
+int HW_PKU = 0;
+int HW_OSPKE = 0;
+int HW_AVX512VBMI2 = 0;
+int HW_GFNI = 0;
+#define HW_GFNI_SSE HW_GFNI
+int HW_VAES = 0;
+int HW_VPCLMULQDQ = 0;
+int HW_AVX512VNNI = 0;
+int HW_AVX512BTALG = 0;
+int HW_AVX512VPOPCNTDQ = 0;
+int HW_RDPID = 0;
+int HW_SGX_LC = 0;
 
 /*  Misc. */
 int HW_x64 = 0;
 
-int HW_PREFETCHWT1 = 0;
+
 int HW_PREFETCHW = 0;
 
 
@@ -244,6 +259,12 @@ int HW_XSAVEC = 0;
 int HW_XSAVES = 0;
 int HW_XSAVEOPT = 0;
 int HW_XGETBV = 0;
+
+
+/* Intel Processor Trace Enumeration Main Leaf (EAX = 14H, ECX = 0) */
+
+int HW_PTWRITE;
+
 
 
 /* AMD-defined CPU features, CPUID level 0x80000008 (EBX) */
@@ -516,6 +537,19 @@ void get_cpu_flags(void)
     HW_AVX512VL    = (info[1] & ((int)1 << 31)) != 0;
 
     HW_PREFETCHWT1 = (info[2] & ((int)1 <<  0)) != 0;
+    HW_AVX512VBMI  = (info[2] & ((int)1 <<  1)) != 0;
+    HW_UMIP        = (info[2] & ((int)1 <<  2)) != 0;
+    HW_PKU         = (info[2] & ((int)1 <<  3)) != 0;
+    HW_OSPKE       = (info[2] & ((int)1 <<  4)) != 0;
+    HW_AVX512VBMI2 = (info[2] & ((int)1 <<  6)) != 0;
+    HW_GFNI        = (info[2] & ((int)1 <<  8)) != 0;
+    HW_VAES        = (info[2] & ((int)1 <<  9)) != 0;
+    HW_VPCLMULQDQ  = (info[2] & ((int)1 << 10)) != 0;
+    HW_AVX512VNNI  = (info[2] & ((int)1 << 11)) != 0;
+    HW_AVX512BTALG = (info[2] & ((int)1 << 12)) != 0;
+    HW_AVX512VPOPCNTDQ = (info[2] & ((int)1 << 14)) != 0;
+    HW_RDPID       = (info[2] & ((int)1 << 22)) != 0;
+    HW_SGX_LC      = (info[2] & ((int)1 << 30)) != 0;
   }
 
   if (nIds >= 0x0000000d)
@@ -529,6 +563,17 @@ void get_cpu_flags(void)
     HW_XSAVES   = (info[0] & ((int)1 << 3)) != 0;
 
   }
+
+
+  if (nIds >= 0x00000014)
+  {
+    /* EAX=14h ECX=0 */
+    cpuid(info, 0x00000014);
+
+    HW_PTWRITE = (info[1] & ((int)1 << 4)) != 0;
+  }
+
+
 
   if (nExIds >= 0x80000001)
   {
@@ -712,7 +757,30 @@ int get_gcc_arch_type_intel(void)
           }
           return intel_sandybridge;
         }
-        return intel_westmere;
+        else
+        {
+          if (HW_MOVBE && HW_RDRND)
+          {
+            if (HW_XSAVE && HW_XSAVEOPT && HW_FSGSBASE)
+            {
+              if (HW_PTWRITE && HW_RDPID && HW_SGX && HW_UMIP)
+              {
+                if (HW_GFNI_SSE && HW_CLWB)
+                  /* in the documentation HW_ENCLV should be
+                    detected, but this is not documented how ... */
+                  return intel_tremont;
+                else
+                  return intel_goldmont_plus;
+              }
+              else
+                return intel_goldmont;
+            }
+            else
+              return intel_silvermont;
+          }
+          else
+            return intel_westmere;
+        }
       }
       return intel_nehalem;
     }
@@ -731,38 +799,46 @@ int get_gcc_arch_type_amd(void)
 {
   if (HW_MMX && HW_SSE && HW_SSE2)
   {
-    if (HW_AVX && HW_AES && HW_PCLMUL && HW_CX16 && HW_SSE3 && HW_SSE4A
-        && HW_SSSE3 && HW_SSE41 && HW_SSE42 && HW_ABM)
+    if (HW_SSE3 && HW_SSSE3 && HW_SSE4A && HW_CX16 && HW_ABM)
     {
-      /* ZEN micro tech */
-      if (HW_BMI && HW_BMI2 && HW_F16C && HW_FMA && HW_FSGSBASE
-          && HW_AVX2 && HW_ADCX && HW_RDSEED && HW_MWAITX && HW_SHA && HW_CLZERO
-          && HW_MOVBE && HW_XSAVEC && HW_XSAVES && HW_CLFLUSHOPT && HW_POPCNT)
+      if (HW_AVX && HW_AES && HW_PCLMUL && HW_SSE41 && HW_SSE42 )
       {
-        if (HW_CLWB)
-          return amd_znver2;
-        else
-          return amd_znver1;
-      }
-
-
-      if (HW_FMA4 && HW_XOP && HW_LWP)
-      {
-        if (HW_BMI && HW_TBM && HW_F16C && HW_FMA)
+        if (HW_MOVBE && HW_F16C && HW_BMI)
         {
-          if (HW_FSGSBASE)
+          /* ZEN micro tech */
+          if (HW_BMI2 && HW_FMA && HW_FSGSBASE && HW_AVX2 && HW_ADCX
+              && HW_RDSEED && HW_MWAITX && HW_SHA && HW_CLZERO
+              && HW_XSAVEC && HW_XSAVES && HW_CLFLUSHOPT && HW_POPCNT)
           {
-            if (HW_BMI2 && HW_AVX2 && HW_MOVBE)
-              return amd_bdver4;
+            if (HW_CLWB)
+              return amd_znver2;
             else
-              return amd_bdver3;
+              return amd_znver1;
           }
           else
-            return amd_bdver2;
+            return amd_btver2;
         }
-        else
-          return amd_bdver1;
+
+        if (HW_FMA4 && HW_XOP && HW_LWP)
+        {
+          if (HW_BMI && HW_TBM && HW_F16C && HW_FMA)
+          {
+            if (HW_FSGSBASE)
+            {
+              if (HW_BMI2 && HW_AVX2 && HW_MOVBE)
+                return amd_bdver4;
+              else
+                return amd_bdver3;
+            }
+            else
+              return amd_bdver2;
+          }
+          else
+            return amd_bdver1;
         }
+      }
+      else
+        return amd_btver1;
     }
 
     if (HW_3DNOW && HW_3DNOWEXT)
@@ -963,6 +1039,21 @@ void all_cpu_flags(void)
   if (HW_AVX512BW) strncat(s, "avx512bw ", mc);
   if (HW_AVX512VL) strncat(s, "avx512vl ", mc);
 
+  if (HW_PREFETCHWT1) strncat(s, "prefetchwt1 ", mc);
+  if (HW_AVX512VBMI) strncat(s, "avx512vbmi ", mc);
+  if (HW_UMIP) strncat(s, "umip ", mc);
+  if (HW_PKU) strncat(s, "pku ", mc);
+  if (HW_OSPKE) strncat(s, "ospke ", mc);
+  if (HW_AVX512VBMI2) strncat(s, "avx512vbmi2 ", mc);
+  if (HW_GFNI) strncat(s, "gfni ", mc);
+  if (HW_VAES) strncat(s, "vaes ", mc);
+  if (HW_VPCLMULQDQ) strncat(s, "vpclmulqdq ", mc);
+  if (HW_AVX512VNNI) strncat(s, "avx512vmni ", mc);
+  if (HW_AVX512BTALG) strncat(s, "avx512btalg ", mc);
+  if (HW_AVX512VPOPCNTDQ) strncat(s, "avx512vpopcntdq ", mc);
+  if (HW_RDPID) strncat(s, "rdpid ", mc);
+  if (HW_SGX_LC) strncat(s, "sgx_lc ", mc);
+
 
   if (HW_CLZERO) strncat(s, "clzero ", mc);
 
@@ -970,6 +1061,8 @@ void all_cpu_flags(void)
   if (HW_XSAVEC) strncat(s, "xsavec ", mc);
   if (HW_XGETBV) strncat(s, "xgetbv ", mc);
   if (HW_XSAVES) strncat(s, "xsaves ", mc);
+
+  if (HW_PTWRITE) strncat(s, "ptwrite ", mc);
 
   printf("Flags          : %s\n", s);
   free(s);
