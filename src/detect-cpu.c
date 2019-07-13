@@ -1066,7 +1066,7 @@ void all_cpu_flags(void)
   if (HW_AVX2) strncat(s, "avx2 ", mc);
   if (HW_SMEP) strncat(s, "smep ", mc);
   if (HW_BMI2) strncat(s, "bmi2 ", mc);
-  if (HW_ERMS) strncat(s, "erms", mc);
+  if (HW_ERMS) strncat(s, "erms ", mc);
   if (HW_INVPCID) strncat(s, "invpcid ", mc);
   if (HW_RTM) strncat(s, "rtm ", mc);
   if (HW_PQM) strncat(s, "pqm ", mc);
