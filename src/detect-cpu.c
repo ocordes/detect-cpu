@@ -400,9 +400,7 @@ void cpu_manufacturer_id(int a, int c, int b)
 
 void set_cpu_type(void)
 {
-  int i;
-
-  i = 0;
+  int i = 0;
 
   while (vendor_string[i].id != CPU_UNKNOWN)
   {
@@ -723,9 +721,7 @@ void get_cpu_flags(void)
 
 char *get_arch_name(int arch)
 {
-  int i;
-
-  i = 0;
+  int i = 0;
 
   while (cpu_archs[i].id != cpu_x86_64)
   {
@@ -853,6 +849,7 @@ int get_gcc_arch_type_amd(void)
     {
       if (HW_AVX && HW_AES && HW_PCLMUL && HW_SSE41 && HW_SSE42 )
       {
+        //printf("test1\n");
         if (HW_MOVBE && HW_F16C && HW_BMI)
         {
           /* ZEN micro tech */
@@ -871,8 +868,10 @@ int get_gcc_arch_type_amd(void)
 
         if (HW_FMA4 && HW_XOP && HW_LWP)
         {
+          //printf("test2\n");
           if (HW_BMI && HW_TBM && HW_F16C && HW_FMA)
           {
+            //printf("test3\n");
             if (HW_FSGSBASE)
             {
               if (HW_BMI2 && HW_AVX2 && HW_MOVBE)
