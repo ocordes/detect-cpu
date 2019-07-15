@@ -1,0 +1,45 @@
+Supported Arch:
+
+Only x86-64 CPUs will be detected.
+
+Intel:
+======
+- nocona (P4 improved)
+- core2
+ - nehalem
+  - westmere
+   - sandybridge
+    - ivybridge
+     - haswell
+      - broadwell
+       - skylake
+         - skylake-avx512
+          - cascadelake
+         - cannonlake
+          - icelake-client
+           - icelake-server
+       - knl
+         - knm
+   - silvermont
+    - goldmont
+     - goldmont-plus 
+      - tremont 
+- bonell
+
+-------------------------------------------------------------
+AMD:
+====
+
+- athlon64
+ - athlon64-sse3
+  - amdfam10
+- btver1
+ - btver2
+ - bdver1
+  - bdver2
+   - bdver3
+    - bdver4
+ - znver1
+  - znver2
+
+
